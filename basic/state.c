@@ -14,7 +14,7 @@ State createState(const char* title,int width,int height)
                 SDL_WINDOW_SHOWN 
                 ),
         .renderer = NULL,
-        .font = TTF_OpenFont("res/dina.ttf",10),
+        .font = NULL,
     };
 }
 
@@ -27,12 +27,17 @@ void initState(State* state)
         printf("Failed to load font! - %s\n",TTF_GetError());
     }
 
-    state->button = BT_create(100,10,40,15,NORMAL);
-    BT_color(&state->button,255,255,0);
+    state->button = BT_create(200,80,BORDER);
+    SDL_Color bColor = {255,0,0,0};
+    SDL_Color fColor = {0,0,0,0};
+    BT_init(&state->button,bColor,"res/dina.ttf",fColor);
+    BT_text(&state->button,"Hello");
 
-    state->button2 = BT_create(400,10,50,15,NORMAL);
-    BT_color(&state->button2,255,255,255);
-
+    state->button2 = BT_create(200,80,BORDER);
+    SDL_Color b2Color = {255,255,255,0};
+    SDL_Color f2Color = {0,0,0,0};
+    BT_init(&state->button2,b2Color,"res/acer.ttf",f2Color);
+    BT_text(&state->button2,"world");
 }
 void updateState(State* state)
 {
@@ -47,20 +52,32 @@ void updateState(State* state)
             {
                 quit = true;
             }
+            if(e.type == SDL_MOUSEMOTION)
+            {
+                SDL_GetMouseState(&state->mouse.x,&state->mouse.y);
+            }
+            if(e.type == SDL_MOUSEBUTTONDOWN)
+            {
+                BT_click(&state->button,state->mouse);
+                BT_click(&state->button2,state->mouse);
+            }
         }
 
-        SDL_SetRenderDrawColor(state->renderer,255,0,0,255);
+        SDL_SetRenderDrawColor(state->renderer,255,255,255,255);
         SDL_RenderClear(state->renderer);
+    
+        UPDATE_STATE_UI;
 
-        BT_draw(state->renderer,&state->button,state->font,"BUTTON");
-        BT_draw(state->renderer,&state->button2,state->font,"BUT _ 2");
+        DRAW_STATE_UI;
 
         SDL_RenderPresent(state->renderer);
-    }
-
+        SDL_Delay(16);
+        }
 }
+
 void freeState(State* state)
 {
     SDL_DestroyRenderer(state->renderer);
     SDL_DestroyWindow(state->window);
+    TTF_CloseFont(state->font);
 }
